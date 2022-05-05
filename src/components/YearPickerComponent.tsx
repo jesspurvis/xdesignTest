@@ -1,13 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React, {useState} from 'react';
 import {Button, Modal, StyleSheet, Text, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
@@ -22,7 +12,7 @@ const YearPicker: React.FC<{
   setModalVisible: (visible: boolean) => void;
   submitSelectedItem: (item: number) => void;
 }> = ({visible, setModalVisible, submitSelectedItem}) => {
-  const [selected, setSelected] = useState(2016);
+  const [selected, setSelected] = useState(0);
   return (
     <Modal
       animationType="slide"
@@ -38,6 +28,7 @@ const YearPicker: React.FC<{
             style={styles.picker}
             selectedValue={selected}
             onValueChange={itemValue => setSelected(itemValue)}>
+            <Picker.Item label={'All Years'} value={0} />
             {rocketYears.map(item => (
               <Picker.Item key={item} label={item.toString()} value={item} />
             ))}
@@ -46,7 +37,6 @@ const YearPicker: React.FC<{
           <Button
             title="Select year"
             onPress={() => submitSelectedItem(selected)}
-            // onPress={() => console.log(selected)}
           />
         </View>
       </View>

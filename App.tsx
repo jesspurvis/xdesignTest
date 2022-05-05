@@ -1,16 +1,7 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
+  Alert,
   GestureResponderEvent,
   Image,
   ImageSourcePropType,
@@ -53,6 +44,7 @@ const FilterButton: React.FC<{
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  const [savedLaunches, setSavedLaunches] = useState([] as Launch[]);
   const [launches, setlaunches] = useState([] as Launch[]);
   const [descending, setDescending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,13 +56,16 @@ const App = () => {
   };
 
   const filterByYear = (year: number) => {
-    let filtered = launches.filter(
-      value => new Date(value.launch_date_unix * 1000).getFullYear() === year,
-    );
+    if (year === 0) {
+      setlaunches(savedLaunches);
+    } else {
+      let filtered = savedLaunches.filter(
+        value => new Date(value.launch_date_unix * 1000).getFullYear() === year,
+      );
+      setlaunches(filtered);
+    }
 
     setModalVisible(false);
-
-    setlaunches(filtered);
   };
 
   const fetchData = async () => {
@@ -80,10 +75,11 @@ const App = () => {
 
       const rocketData = await rocketResp.json();
       setlaunches(rocketData);
+      setSavedLaunches(rocketData);
       setLoading(false);
-      console.log('Fetched!');
     } catch (error) {
       console.warn('fetch Error: ', error);
+      Alert.alert('Error', `${error}`);
       setLoading(false);
     }
   };

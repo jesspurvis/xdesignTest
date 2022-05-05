@@ -24,15 +24,27 @@ import {
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import RocketList from './src/components/RocketList';
+import RocketList from './src/components/LaunchList';
+import YearPicker from './src/components/YearPickerComponent';
+
+export type Launch = {
+  rocket: {rocket_name: string};
+  flight_number: number;
+  launch_date_unix: number;
+  mission_name: string;
+};
 
 const FilterButton: React.FC<{
   title: string;
   icon: ImageSourcePropType;
+  loadingFinished: boolean;
   onPress: (event: GestureResponderEvent) => void;
-}> = ({title, onPress, icon}) => {
+}> = ({title, onPress, icon, loadingFinished}) => {
   return (
-    <TouchableOpacity style={styles.sortButton} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.sortButton}
+      onPress={onPress}
+      disabled={loadingFinished}>
       <Text style={styles.buttonText}>{title}</Text>
       <Image source={icon} />
     </TouchableOpacity>
@@ -41,23 +53,38 @@ const FilterButton: React.FC<{
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  const [rockets, setRockets] = useState([]);
+  const [launches, setlaunches] = useState([] as Launch[]);
   const [descending, setDescending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const sortArr = () => {
     setDescending(!descending);
-    setRockets(rockets.reverse());
+    setlaunches(launches.reverse());
+  };
+
+  const filterByYear = (year: number) => {
+    let filtered = launches.filter(
+      value => new Date(value.launch_date_unix * 1000).getFullYear() === year,
+    );
+
+    setModalVisible(false);
+
+    setlaunches(filtered);
   };
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const rocketResp = await fetch('https://api.spacexdata.com/v3/launches');
 
       const rocketData = await rocketResp.json();
-      setRockets(rocketData);
+      setlaunches(rocketData);
+      setLoading(false);
       console.log('Fetched!');
     } catch (error) {
       console.warn('fetch Error: ', error);
+      setLoading(false);
     }
   };
 
@@ -74,12 +101,18 @@ const App = () => {
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.container}>
+        <YearPicker
+          visible={modalVisible}
+          setModalVisible={setModalVisible}
+          submitSelectedItem={filterByYear}
+        />
         <Image
           source={require('./assets/spacex-logo.png')}
           style={styles.logo}
         />
         <View style={styles.buttonHolder}>
           <FilterButton
+            loadingFinished={false}
             title="Reload Data"
             onPress={fetchData}
             icon={require('./assets/icon/refresh.png')}
@@ -87,22 +120,24 @@ const App = () => {
         </View>
         <View style={styles.buttonHolder}>
           <FilterButton
+            loadingFinished={loading}
             title="Filter by year"
-            onPress={() => console.log('beep')}
+            onPress={() => setModalVisible(true)}
             icon={require('./assets/icon/select.png')}
           />
           <FilterButton
-            title={descending ? 'Sort by Ascending' : 'Sort by Descending'}
+            loadingFinished={loading}
+            title={descending ? 'Sort Ascending' : 'Sort Descending'}
             onPress={sortArr}
             icon={require('./assets/icon/sort.png')}
           />
         </View>
 
-        <View style={{height: '60%', width: '100%'}}>
-          {rockets.length !== 0 ? (
-            <RocketList rockets={rockets} />
-          ) : (
+        <View style={styles.listHolder}>
+          {loading ? (
             <ActivityIndicator size={'large'} />
+          ) : (
+            <RocketList launches={launches} />
           )}
         </View>
       </View>
@@ -124,22 +159,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginBottom: 20,
   },
+  listHolder: {height: '60%', width: '100%'},
 
   buttonText: {
     fontWeight: '700',
     fontSize: 16,
     color: 'white',
     width: '70%',
+    fontFamily: 'BrandonGrotesque-Regular',
   },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'BrandonGrotesque-Regular',
-  },
+
   sectionDescription: {
     marginTop: 8,
     fontSize: 18,

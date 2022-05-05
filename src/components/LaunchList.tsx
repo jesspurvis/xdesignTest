@@ -11,6 +11,7 @@
 import React from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
 import {DateTime} from 'luxon';
+import {Launch} from '../../App';
 
 function ordinal(n: number) {
   var s = ['th', 'st', 'nd', 'rd'];
@@ -23,7 +24,7 @@ function dateFormatter(date: any) {
   return `${ordinal(luxonDate.day)} ${luxonDate.toFormat('LLL kkkk')}`;
 }
 
-const RocketListItem = ({item}: {item: any}) => (
+const RocketListItem = ({item}: {item: Launch}) => (
   <View style={styles.listItem}>
     <Text style={styles.sectionTitle}>#{item.flight_number}</Text>
     <Text style={[styles.sectionTitle, {width: '50%'}]}>
@@ -38,12 +39,12 @@ const RocketListItem = ({item}: {item: any}) => (
   </View>
 );
 
-const RocketList: React.FC<{
-  rockets: Array<any>;
-}> = ({rockets}) => {
+const LaunchList: React.FC<{
+  launches: Array<Launch>;
+}> = ({launches}) => {
   return (
     <FlatList
-      data={rockets}
+      data={launches}
       keyExtractor={item => item.flight_number + ' ' + item.launch_date_unix}
       renderItem={RocketListItem}
       style={styles.flatlistStyle}
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     shadowColor: '#000000',
     shadowOpacity: 0.25,
     shadowOffset: {height: 3, width: 0},
@@ -77,14 +78,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '500',
     alignSelf: 'center',
-  },
-
-  sectionText: {
-    fontSize: 10,
     fontWeight: '500',
-    alignSelf: 'center',
+    color: '#545454',
+    fontFamily: 'BrandonGrotesque-Regular',
   },
 
   dateText: {
@@ -92,12 +89,16 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     textAlign: 'right',
     alignSelf: 'flex-end',
+    color: '#545454',
+    fontFamily: 'BrandonGrotesque-Regular',
   },
   rocketText: {
-    fontSize: 10,
+    fontSize: 18,
     fontWeight: '700',
     alignSelf: 'flex-end',
     textAlign: 'right',
+    color: '#545454',
+    fontFamily: 'BrandonGrotesque-Regular',
   },
   sectionDescription: {
     marginTop: 8,
@@ -109,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RocketList;
+export default LaunchList;
